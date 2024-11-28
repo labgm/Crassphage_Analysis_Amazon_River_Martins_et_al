@@ -1,0 +1,155 @@
+---
+title: "viral_alpha_n_betadiv_steps"
+author: "TMDavi"
+date: "2024-09-19"
+output: html_document
+---
+# Set environment
+```{r setup}
+#knitr::opts_chunk$set(echo = TRUE)
+# Loading necessary libraries
+library(vegan)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+library(RVAideMemoire)
+library(car)
+library(psych)
+library(rstatix)
+library(DescTools)
+library(knitr)
+
+# Set working directory to your location (adjust path as necessary)
+setwd('/home/davidmartins/Documentos/Viral_analysis/contig_mapping/')
+```
+
+## ALPHA DIVERSITY
+
+```{r cars}
+#ALPHA DIVERSITY##############################################################
+
+# Transpose the data so that columns become rows (samples)
+data <- read.csv('itac_contigs_tpm_norm_log_trans.tsv', sep = '\t', row.names = 1, check.names = FALSE)
+data_transposed <- t(data)
+# Check if data is numeric and properly formatted
+str(data_transposed)
+data_transposed <- as.matrix(data_transposed)
+#data_transposed 
+```
+
+## Calculate alpha diversity indexes 
+
+```{r cars2}
+# Shannon diversity index
+shannon_diversity <- diversity(data_transposed, index = "shannon")
+shannon_diversity
+
+```
+```{r cars3}
+# Observed diversity index (Species Richness)
+observed <- specnumber(data_transposed)
+observed
+
+
+```
+
+## Prepare the table
+
+```{r cars4}
+# Combine the indices into a single data frame for plotting
+diversity_data <- data.frame(
+  samples = c('IT1', 'IT1', 'IT1', 'IT2', 'IT2', 'IT2', 'IT3', 'IT3', 'IT3', 'IT4', 'IT4', 'IT4'),
+  Shannon = shannon_diversity,
+  Observed = observed
+)
+diversity_data
+
+# Saving the diversity data table
+write.table(diversity_data, '../diversity_analysis/diversity_data_table.tsv', sep = '\t', row.names = FALSE)
+```
+
+Normality of data evalation
+
+```{r cars5}
+# Combine the indices into a single data frame for plotting
+#Statistical tests: ANOVA ##################################
+#Normalidade
+byf.shapiro(Shannon ~ samples, diversity_data)  #IT4 not normaly distributed
+#byf.shapiro(Simpson ~ samples, diversity_data)
+byf.shapiro(Observed ~ samples, diversity_data) #IT4 not normaly distributed
+```
+ANOVA and bonferonni post-hoc for Shannon species index
+```{r cars6}
+anova_shannon <- aov(Shannon ~ samples, diversity_data)
+summary(anova_shannon)
+  #post-hoc
+PostHocTest(anova_shannon, method = "bonf")
+```
+ANOVA and bonferonni post-hoc for observed species index
+```{r cars7}
+#ANOVA
+anova_observed <- aov(Observed ~ samples, diversity_data)
+summary(anova_observed)
+#post-hoc
+PostHocTest(anova_observed, method = "bonf")
+```
+## Alpha diversity boxplots
+
+```{r pressure, echo=FALSE}
+#Preparing the table for plooting##########################################
+
+# Melt the data for easier plotting
+diversity_data_melted <- melt(diversity_data, id.vars = "samples")
+diversity_data_melted
+#write.table(diversity_data_melted, 'diversity_data_melt_table.tsv',sep='\t',row.names = FALSE)
+
+# Generate separate box plots for each diversity index using facet_wrap
+ggplot(diversity_data_melted, aes(x = samples, y = value, fill = variable)) +
+geom_boxplot() +
+  labs(title = "Alpha Diversity Indices for Each Sample", x = "Sample", y = "Diversity Index Value") +
+  facet_wrap(~ variable, scales = "free_y") +  # Separate facets for each index (Shannon, Simpson, Species Richness)
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))  # Rotate x-axis labels for readability
+
+```
+## BETA DIVERSITY
+
+```{r pressure2, echo=FALSE}
+#Beta DIVERSITY##############################################################
+library(dendextend)
+
+# Calculate Bray-Curtis distances
+bc_dist <- vegdist(data_transposed, method = "bray")
+
+# Perform hierarchical clustering
+hc <- hclust(bc_dist, method = "ward.D")
+
+# Convert to a dendrogram and plot horizontally
+dend <- as.dendrogram(hc)
+dend
+# Open a PNG device
+plot(rotate(dend, 1), main = "Cladogram of Bray-Curtis Distances", horiz = TRUE)
+#tiff("cladogram_plot.tiff", width = 800, height = 600, res = 100)
+
+```
+### PERMANOVA analysis
+```{r cars8}
+#Calculate PERMANOVA
+bc_dist <- vegdist(data_transposed, method = "bray")
+# Create a matrix with the distances
+metadata <- data.frame(
+  sample = c("IT1_A", "IT1_B", "IT1_C", "IT2_A", "IT2_B", "IT2_C", "IT3_A", "IT3_B", "IT3_C", "IT4_A", "IT4_B", "IT4_C"),
+  group = c("IT1", "IT1", "IT1", "IT2", "IT2", "IT2", "IT3", "IT3", "IT3", "IT4", "IT4", "IT4")
+)
+
+result <- adonis2(bc_dist  ~ group, data = metadata, permutations = 999)
+result
+```
+
+### Pairwise PERMANOVA analysis
+```{r cars9}
+# Run pairwise PERMANOVA
+bd <- betadisper(bc_dist,metadata$group)
+anova(bd)
+permutest(bd, pairwise = TRUE)
+```
