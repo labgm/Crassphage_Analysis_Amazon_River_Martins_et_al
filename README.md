@@ -2,11 +2,7 @@
 
 Repository to accompany "CrAssphage distribution analysis in an Amazon River based on metagenomic sequencing data and georeferencing", Martins, et al 2024. This code provides the scripts necessary to replicate the analyses described in the paper.
 
-## 01_Read Based Analysis
-- kraken_run.sh - Script to run Kraken and taxonomically identify reads<br/>
-- The results were then sugmitted to Pavian: https://fbreitwieser.shinyapps.io/pavian/
-
-## 02_filtering_viral_contigs
+## 01_filtering_viral_contigs
 
 - Pipeline used for viral sequence filtration, annotation and quantification
 - The scripts are shown in order of execution
@@ -47,17 +43,17 @@ Repository to accompany "CrAssphage distribution analysis in an Amazon River bas
 - maraba_contigs_read_mapping.sh - Script to perform bowtie2 read mapping 
 - samtools_extract_info.sh - Script to extract the sam files read mapping information
 
-## 03_Processing_mapping_data
+## 02_Processing_mapping_data
 - process_mapping_data.ipynb - Set of scripts to merge samples, normalize data, get viral taxonomies, plot clustermap and correlations with crassphage correlations and environmental data
 - viral_tax_percentages.tsv - Viral taxonomies
 - itac_contigs_raw_reads.tsv - contig mapping data with raw reads
 - env_data.tsv - Calculated enviromental data transformed to log
 - crass_signifficant_correlations.tsv - Calculated crassphage spearman correlations with environmental data
 
-## 04_diversity_analysis
+## 03_diversity_analysis
 - viral_alpha_n_betadiv_steps.Rmd - Set of scripts to calculate alpha and beta diversity indexes and to perform respective statistical analysis
 - viral_alpha_n_betadiv_steps.html
 - plot_alpha.py - Plot alfa diversity boxplots
-## 05_annotation_processing
+## 04_annotation_processing
 - annot_process.ipynb - set of scripts to extract the crassphage annotations, verufy shared genes between the sample locations and to extract crassphage host taxonomies
 - annot_process.html
