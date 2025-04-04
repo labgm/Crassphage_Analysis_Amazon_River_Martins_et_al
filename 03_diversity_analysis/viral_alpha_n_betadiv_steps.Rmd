@@ -19,8 +19,9 @@ library(rstatix)
 library(DescTools)
 library(knitr)
 
+
 # Set working directory to your location (adjust path as necessary)
-setwd('/home/davidmartins/Documentos/Viral_analysis/contig_mapping/')
+setwd('/home/davidmartins/Documentos/viral_analysis_v2/contig_mapping/')
 ```
 
 ## ALPHA DIVERSITY
@@ -29,12 +30,13 @@ setwd('/home/davidmartins/Documentos/Viral_analysis/contig_mapping/')
 #ALPHA DIVERSITY##############################################################
 
 # Transpose the data so that columns become rows (samples)
-data <- read.csv('itac_contigs_tpm_norm_log_trans.tsv', sep = '\t', row.names = 1, check.names = FALSE)
+data <- read.csv('../contig_mapping/viral_clust_log_trans.tsv', sep = '\t', row.names = 1, check.names = FALSE)
 data_transposed <- t(data)
+
 # Check if data is numeric and properly formatted
 str(data_transposed)
 data_transposed <- as.matrix(data_transposed)
-#data_transposed 
+data_transposed 
 ```
 
 ## Calculate alpha diversity indexes 
@@ -65,7 +67,7 @@ diversity_data <- data.frame(
 diversity_data
 
 # Saving the diversity data table
-write.table(diversity_data, '../diversity_analysis/diversity_data_table.tsv', sep = '\t', row.names = FALSE)
+write.table(diversity_data, 'diversity_data_table.tsv', sep = '\t', row.names = FALSE)
 ```
 
 Normality of data evalation
@@ -117,8 +119,10 @@ geom_boxplot() +
 ```{r pressure2, echo=FALSE}
 #Beta DIVERSITY##############################################################
 library(dendextend)
+library(vegan)
 
 # Calculate Bray-Curtis distances
+data_transposed[is.na(data_transposed)] <- 0  # Handle NAs
 bc_dist <- vegdist(data_transposed, method = "bray")
 
 # Perform hierarchical clustering
@@ -126,10 +130,21 @@ hc <- hclust(bc_dist, method = "ward.D")
 
 # Convert to a dendrogram and plot horizontally
 dend <- as.dendrogram(hc)
-dend
-# Open a PNG device
-plot(rotate(dend, 1), main = "Cladogram of Bray-Curtis Distances", horiz = TRUE)
-#tiff("cladogram_plot.tiff", width = 800, height = 600, res = 100)
+plot(dend)  # Ensure it plots before saving
+
+# Open a TIFF device
+tiff("/home/davidmartins/Documentos/viral_analysis_v2/div_analysis/betadiv_plot.tiff", 
+     width = 8, height = 6, units = "in", res = 300)
+
+# Plot the dendrogram horizontally
+plot(dend, main = "Cladogram of Bray-Curtis Distances", horiz = TRUE)
+
+# Close the TIFF device
+dev.off()
+
+# Check if the file was created
+file.exists("/home/davidmartins/Documentos/viral_analysis_v2/div_analysis/betadiv_plot.tiff")
+
 
 ```
 ### PERMANOVA analysis
