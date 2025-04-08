@@ -21,7 +21,7 @@ library(knitr)
 
 
 # Set working directory to your location (adjust path as necessary)
-setwd('/home/davidmartins/Documentos/viral_analysis_v2/contig_mapping/')
+#setwd('/home/davidmartins/Documentos/viral_analysis_v2/contig_mapping/')
 ```
 
 ## ALPHA DIVERSITY
@@ -30,7 +30,7 @@ setwd('/home/davidmartins/Documentos/viral_analysis_v2/contig_mapping/')
 #ALPHA DIVERSITY##############################################################
 
 # Transpose the data so that columns become rows (samples)
-data <- read.csv('../contig_mapping/viral_clust_log_trans.tsv', sep = '\t', row.names = 1, check.names = FALSE)
+data <- read.csv('../02_processing_mapping_data/viral_log_trans_abund.tsv', sep = '\t', row.names = 1, check.names = FALSE)
 data_transposed <- t(data)
 
 # Check if data is numeric and properly formatted
